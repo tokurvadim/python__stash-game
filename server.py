@@ -97,25 +97,20 @@ class Game:
     def set_stash(self, conn, client_socket):
         conn.sendto(b'Please, enter coordinate of your stash: ', client_socket)
         try:
-            cords = conn.recv(4096).decode()
+            cords = conn.recv(1024).decode()
             # if len(re.search(r'[A-Ja-j]{1}\d{1}', cords)[0]) == len(cords) and len(cords) == 2:
             if re.search(r'[A-Ja-j]{1}\d{1}', cords)[0] == cords:
                 for player in self.players_list:
                     if client_socket == (player.get_ip, player.get_port):
                         player.field[int(cords[1])][FIELD_INDEXES.get(cords[0].upper())] = 'X'
-                print('pass')
                 for line in FIELD:
-                    conn.sendto(' '.join(line).encode())
+                    conn.sendto(' '.join(line).encode(), client_socket)
             else:
                 raise IOError
         except IOError:
             print('---invalid coordinate--- Sending repeat request.')
             conn.sendto(b'Error: Invalid coordinate. Try again.', client_socket)
             return self.set_stash(conn, client_socket)
-        except Exception:
-            print('not pass')
-        finally:
-            print('not pass 2')
 
     def game_thread(self):
         # self.sock.bind(HOST)
@@ -151,5 +146,5 @@ class Game:
 
 
 if __name__ == '__main__':
-    _game = Game(HOST)
-    _game.start_game()
+    game = Game(HOST)
+    game.start_game()
