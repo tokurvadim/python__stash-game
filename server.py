@@ -87,6 +87,7 @@ class Game:
                     self.players_list.append(self.player1)
                     conn.sendto(b'Waiting for second player...', client_socket)
                 users[username] = client_socket
+                return username
             else:
                 raise IOError
         except IOError:
@@ -119,22 +120,22 @@ class Game:
             conn, host_client = self.sock.accept()
             sem.acquire()
             with conn:
-                print(f'Set connect with player: {host_client}. Waiting for register...')
+                print(f'Set connect with client: {host_client}. Waiting for register...')
                 conn.sendto(b'Connection success.', host_client)
-                self.register_player(conn, host_client)
+                username = self.register_player(conn, host_client)
                 sem.release()
                 while True:
                     if len(users) == USERS_COUNT:
                         conn.sendto(b'The game is start.', host_client)
                         break
                 print('Both players has connected. The game is start.')
-                print(f'Send request to set stash to player: {host_client}...')
+                print(f'Send request to set stash to player: {username}...')
                 self.set_stash(conn, host_client)
 
     def start_game(self):
         self.sock.bind(HOST)
         self.sock.listen()
-        print('Server is start.')
+        print('Server is start and listen...')
         threads = []
         for _ in range(USERS_COUNT):
             t = threading.Thread(target=self.game_thread)

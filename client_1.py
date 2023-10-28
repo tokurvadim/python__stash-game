@@ -39,6 +39,7 @@ def make_connection(host, sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         pass
     print(sock.recv(1024).decode())
     set_cords_stash = valid_check(host, sock)
+    print(set_cords_stash)
     return True
 
 

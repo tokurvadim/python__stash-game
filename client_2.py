@@ -30,15 +30,14 @@ def make_connection(host, sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(host)
     print(f'Send request to connect to host: {host}')
     print(sock.recv(1024).decode())
-    valid_check(host, sock)
+    set_username = valid_check(host, sock)
     print(sock.recv(1024).decode())
     print(sock.recv(1024).decode())
     print(sock.recv(1024).decode())
     while sock.recv(1024).decode() != 'The game is start.':
         pass
     print(sock.recv(1024).decode())
-    valid_check(host, sock)
-    print_field(sock)
+    set_cords_stash = valid_check(host, sock)
     return True
 
 
