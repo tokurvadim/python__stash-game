@@ -1,44 +1,8 @@
 import socket
 
-from exceptions import ERROR_LIST
-from server import FIELD, HOST
+from server import HOST
+from client import Client
 
-
-def print_field(sock):
-    for _ in range(len(FIELD)):
-        print(sock.recv(1024).decode())
-
-
-def valid_check(host, sock):
-    while True:
-        print(sock.recv(1024).decode())
-        name = input().encode()
-        sock.sendto(name, host)
-        while True:
-            response = sock.recv(1024).decode()
-            if response:
-                print(response)
-                break
-        if response in ERROR_LIST:
-            continue
-        else:
-            break
-    return True
-
-
-def make_connection(host, sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)):
-    sock.connect(host)
-    print(f'Send request to connect to host: {host}')
-    print(sock.recv(1024).decode())
-    set_username = valid_check(host, sock)
-    print(sock.recv(1024).decode())
-    print(sock.recv(1024).decode())
-    print(sock.recv(1024).decode())
-    while sock.recv(1024).decode() != 'The game is start.':
-        pass
-    print(sock.recv(1024).decode())
-    set_cords_stash = valid_check(host, sock)
-    return True
-
-
-make_connection(HOST)
+if __name__ == '__main__':
+    client = Client(socket=socket.socket(socket.AF_INET, socket.SOCK_STREAM), host=HOST)
+    client.start()
