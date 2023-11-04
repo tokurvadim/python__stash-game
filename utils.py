@@ -8,7 +8,7 @@ ERROR_LIST = [
 ]
 
 GAMEOVER_MSG_LIST = [
-    'You find a stash! Congrats!',
+    'You found a stash! Congrats!',
     'You lose! Another player found your stash!',
 ]
 
