@@ -2,7 +2,7 @@ import threading
 from settings import USERS_COUNT
 
 ERROR_LIST = [
-    'Error: Invalid username or this username is already taken. Try again.',
+    'Error: This username is already taken. Try again.',
     'Error: Invalid coordinate. Try again.',
     'Error: Invalid move. Try again.',
 ]

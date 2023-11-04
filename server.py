@@ -53,9 +53,7 @@ class Server:
     def register_player(self, conn, client_socket):
         conn.sendto(b'Please, enter your username:', client_socket)
         try:
-            print('flag first')
             username = conn.recv(1024).decode()
-            print('flag sec')
             empty_username_flag = True
             for player in self.players_list:
                 if username == player.username:
