@@ -116,12 +116,12 @@ class Server:
                 if cords == player.stash_enemy:
                     player.field_moves[cords[0]][cords[1]] = 'X'
                     print(f'***Game end! Player {player.username} win!***')
-                    conn.sendto(b'You find a stash! Congrats!', client_socket)
+                    conn.sendto(b'You found a stash! Congrats!', client_socket)
                     self.send_field(conn, client_socket, player)
                     return True
                 else:
                     player.field_moves[cords[0]][cords[1]] = '+'
-                    print(f'Player {player.username} make a move.')
+                    print(f'Player {player.username} make a move to cords: {player.current_move}.')
                     conn.sendto(b'You make a move.', client_socket)
                     self.send_field(conn, client_socket, player)
                     return False
@@ -151,18 +151,17 @@ class Server:
                     move = [player.current_move[0], player.current_move[1] - 1]
 
                 if 1 <= move[0] <= 9 and 1 <= move[1] <= 10:
-                    print(f'Get move from {player.username}.')
                     player.field_moves[player.current_move[0]][player.current_move[1]] = '.'
                     player.current_move = move
                     if move == player.stash_enemy:
                         player.field_moves[move[0]][move[1]] = 'X'
                         print(f'***Game end! Player {player.username} win!***')
-                        conn.sendto(b'You find a stash! Congrats!', client_socket)
+                        conn.sendto(b'You found a stash! Congrats!', client_socket)
                         self.send_field(conn, client_socket, player)
                         return True
                     else:
                         player.field_moves[move[0]][move[1]] = '+'
-                        print(f'Player {player.username} make a move.')
+                        print(f'Player {player.username} make a move to cords: {player.current_move}.')
                         conn.sendto(b'You make a move.', client_socket)
                         self.send_field(conn, client_socket, player)
                         return False
@@ -175,6 +174,18 @@ class Server:
             conn.sendto(b'Error: Invalid move. Try again.', client_socket)
             return self.make_move(conn, client_socket, player)
 
+    def game_loop(self, conn, client_socket, player):
+        print('The game is start.')
+        first_move = self.make_move_first(conn, client_socket, player)
+        if first_move:
+            EVENT.set()
+            return True
+        while True:
+            move = self.make_move(conn, client_socket, player)
+            if move:
+                EVENT.set()
+                return True
+
     def game_thread(self):
         while True:
             conn, client_socket = self.sock.accept()
@@ -184,16 +195,8 @@ class Server:
                 player = self.register_player(conn, client_socket)
                 print(f'Send request to set stash to player: {player.username}...')
                 self.set_stash(conn, client_socket, player.username)
-                print('The game is start.')
-                first_move = self.make_move_first(conn, client_socket, player)
-                if first_move:
-                    EVENT.set()
-                    return True
-                while True:
-                    move = self.make_move(conn, client_socket, player)
-                    if move:
-                        EVENT.set()
-                        return True
+                self.game_loop(conn, client_socket, player)
+                return True
 
     def start(self):
         self.sock.bind(HOST)
