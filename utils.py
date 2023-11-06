@@ -1,4 +1,5 @@
-import threading
+from threading import Barrier, Event
+
 from settings import USERS_COUNT
 
 ERROR_LIST = [
@@ -25,5 +26,5 @@ FIELD_INDEXES = {
     'J': 10,
 }
 
-BARRIER = threading.Barrier(USERS_COUNT)
-EVENT = threading.Event()
+THREAD_BARRIER = Barrier(USERS_COUNT)
+THREAD_EVENT = Event()

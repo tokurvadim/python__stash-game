@@ -1,3 +1,5 @@
+from re import search
+
 from utils import ERROR_LIST, GAMEOVER_MSG_LIST
 
 
@@ -8,11 +10,12 @@ class Client:
 
     def input_valid(self):
         while True:
-            data = input().encode()
-            if data:
-                return data
+            data = input().strip()
+            match = search(r'[,`=]', data)
+            if data and not match:
+                return data.encode()
             else:
-                print('Please, input something:')
+                print('Incorrect input. Try again:')
                 continue
 
     def valid_check(self):

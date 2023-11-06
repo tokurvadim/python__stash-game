@@ -1,4 +1,4 @@
-TO START THE GAME - RUN 'server.py', 'client_1.py', 'client_2.py'
+TO START THE GAME - RUN 'server_1.py', 'client_1.py', 'client_2.py'
 
 exceptions.py - custom classes of exceptions
 utils.py - some constants and vars need to play the game

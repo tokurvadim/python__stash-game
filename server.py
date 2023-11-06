@@ -1,11 +1,11 @@
 import socket
 import re
-import threading
-import time
+from threading import Thread
+from time import sleep
 
 from exceptions import InputCordsError, InputUsernameError, WrongMoveError
-from utils import FIELD_INDEXES, BARRIER, EVENT
-from settings import USERS_COUNT, HOST
+from utils import FIELD_INDEXES, THREAD_BARRIER, THREAD_EVENT
+from settings import USERS_COUNT
 
 
 class Player:
@@ -65,8 +65,8 @@ class Server:
                     client_socket)
                 new_player = Player(*client_socket, username)
                 self.players_list.append(new_player)
-                BARRIER.wait()
-                BARRIER.reset()
+                THREAD_BARRIER.wait()
+                THREAD_BARRIER.reset()
                 conn.sendto(b'Preparing for game.', client_socket)
                 print('Both players has connected. Prepare for game...')
                 return new_player
@@ -88,13 +88,13 @@ class Server:
                         player.stash_enemy = [int(cords[1]), FIELD_INDEXES.get(cords[0])]
                 conn.sendto(b'Successfully set stash!', client_socket)
                 print(f'Successfully set stash to player {username}.')
-                BARRIER.wait()
-                BARRIER.reset()
+                THREAD_BARRIER.wait()
+                THREAD_BARRIER.reset()
                 conn.sendto(b'Get ready to start!', client_socket)
-                time.sleep(1)
+                sleep(1)
                 for i in range(3, -1, -1):
                     conn.sendto(f'Game start in {i}...'.encode(), client_socket)
-                    time.sleep(1)
+                    sleep(1)
             else:
                 raise InputCordsError
         except InputCordsError as error:
@@ -107,7 +107,7 @@ class Server:
         try:
             cords = conn.recv(1024).decode().upper()
             match = re.findall(r'[A-J]\d', cords)
-            if EVENT.is_set():
+            if THREAD_EVENT.is_set():
                 conn.sendto(b'You lose! Another player found your stash!', client_socket)
                 return True
             if len(match) == 1 and match[0] == cords:
@@ -137,7 +137,7 @@ class Server:
         try:
             move = conn.recv(1024).decode().lower()
             match = re.findall(r'[urdl]', move)
-            if EVENT.is_set():
+            if THREAD_EVENT.is_set():
                 conn.sendto(b'You lose! Another player found your stash!', client_socket)
                 return True
             if len(match) == 1 and match[0] == move:
@@ -178,12 +178,12 @@ class Server:
         print('The game is start.')
         first_move = self.make_move_first(conn, client_socket, player)
         if first_move:
-            EVENT.set()
+            THREAD_EVENT.set()
             return True
         while True:
             move = self.make_move(conn, client_socket, player)
             if move:
-                EVENT.set()
+                THREAD_EVENT.set()
                 return True
 
     def game_thread(self):
@@ -199,19 +199,14 @@ class Server:
                 return True
 
     def start(self):
-        self.sock.bind(HOST)
+        self.sock.bind(self.HOST)
         self.sock.listen()
         print('Server is start and listen...')
         threads = []
         for _ in range(USERS_COUNT):
-            t = threading.Thread(target=self.game_thread)
+            t = Thread(target=self.game_thread)
             threads.append(t)
         for t in threads:
             t.start()
         for t in threads:
             t.join()
-
-
-if __name__ == '__main__':
-    server = Server(HOST)
-    server.start()

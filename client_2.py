@@ -1,6 +1,6 @@
 import socket
 
-from server import HOST
+from settings import HOST
 from client import Client
 
 if __name__ == '__main__':
