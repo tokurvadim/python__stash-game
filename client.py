@@ -33,9 +33,24 @@ class Client:
     def get_field(self):
         print(self.socket.recv(1024).decode())
 
-    def make_move(self):
+    def make_move_first(self):
         while True:
             print(self.socket.recv(1024).decode())
+            cords = self.input_valid()
+            self.socket.sendto(cords, self.host)
+            response = self.socket.recv(1024).decode()
+            print(response)
+            if response in ERROR_LIST:
+                continue
+            elif response in GAMEOVER_MSG_LIST:
+                print(self.socket.recv(1024).decode())
+                return True
+            else:
+                print(self.socket.recv(1024).decode())
+                return False
+            
+    def make_move(self):
+        while True:
             cords = self.input_valid()
             self.socket.sendto(cords, self.host)
             response = self.socket.recv(1024).decode()
@@ -63,6 +78,9 @@ class Client:
             set_cords_stash = self.valid_check()
             print(self.socket.recv(1024).decode())
             self.countdown()
+            first_move_result = self.make_move_first()
+            if first_move_result:
+                return True
             while True:
                 move_result = self.make_move()
                 if move_result:
